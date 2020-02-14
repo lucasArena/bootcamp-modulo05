@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
 import api from '../../services/api';
 
 import Container from '../../components/Container';
 import Loading from '../../components/Loading';
-import { Owner, IssueList } from './styles';
+import { Owner, Select, Pagination, IssueList } from './styles';
 
 export default class Repository extends Component {
   // eslint-disable-next-line react/static-property-placement
@@ -23,10 +23,12 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    page: 1,
   };
 
   async componentDidMount() {
     const { match } = this.props;
+    const { page } = this.state;
 
     const repoName = decodeURIComponent(match.params.repository);
 
@@ -36,6 +38,7 @@ export default class Repository extends Component {
         params: {
           state: 'open',
           per_page: 5,
+          page,
         },
       }),
     ]);
@@ -47,8 +50,69 @@ export default class Repository extends Component {
     });
   }
 
+  handleChangeStatus = async e => {
+    const state = e.target.value;
+    const { repository, page } = this.state;
+
+    const issues = await api.get(`/repos/${repository.full_name}/issues`, {
+      params: {
+        state,
+        per_page: 5,
+        page,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+    });
+  };
+
+  handlePagePrevius = async e => {
+    const { state, repository, page } = this.state;
+    const newPage = page - 1;
+
+    if (newPage <= 0) {
+      return;
+    }
+
+    const issues = await api.get(`/repos/${repository.full_name}/issues`, {
+      params: {
+        state,
+        per_page: 5,
+        page: newPage,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+      page: newPage,
+    });
+  };
+
+  handlePageForward = async e => {
+    const { state, repository, page } = this.state;
+    const newPage = page + 1;
+
+    if (newPage <= 0) {
+      return;
+    }
+
+    const issues = await api.get(`/repos/${repository.full_name}/issues`, {
+      params: {
+        state,
+        per_page: 5,
+        page: newPage,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+      page: newPage,
+    });
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, page } = this.state;
 
     if (loading) {
       return (
@@ -66,6 +130,28 @@ export default class Repository extends Component {
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
+        <Select onChange={this.handleChangeStatus}>
+          <option value="all">Todas</option>
+          <option value="open">Abertas</option>
+          <option value="closed">Fechadas</option>
+        </Select>
+        <Pagination>
+          <div>
+            <FaArrowLeft
+              size={18}
+              color="#000"
+              value={page + 1}
+              onClick={this.handlePagePrevius}
+            />
+            <FaArrowRight
+              size={18}
+              color="#000"
+              value={page - 1}
+              onClick={this.handlePageForward}
+            />
+          </div>
+          <p>Pagína {page}</p>
+        </Pagination>
         <IssueList>
           {issues.map(issue => (
             <li key={String(issue.id)}>

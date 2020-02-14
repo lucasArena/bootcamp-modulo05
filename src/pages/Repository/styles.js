@@ -33,6 +33,41 @@ export const Owner = styled.header`
   }
 `;
 
+export const Select = styled.select`
+  min-width: 200px;
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  margin-top: 20px;
+  background-color: #eee;
+`;
+
+export const Pagination = styled.div`
+  padding-top: 20px;
+
+  div {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  p {
+    margin: 10px;
+    display: block;
+    text-align: center;
+  }
+
+  svg {
+    cursor: pointer;
+
+    & + svg {
+      margin-left: 10px;
+    }
+  }
+`;
+
 export const IssueList = styled.ul`
   padding-top: 30px;
   margin-top: 30px;
